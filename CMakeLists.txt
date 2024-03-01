@@ -5,11 +5,29 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+message(${PROJECT_NAME})
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
+include_directories(include)
+
+add_executable(${PROJECT_NAME} src/main.cc
+        src/hand_to_arm_logic.cc
+        include/ur5_arm_control/hand_to_arm_logic.h)
+
+ament_target_dependencies(${PROJECT_NAME}
+        rclcpp
+        trajectory_msgs
+        sensor_msgs
+)
+
+install(TARGETS
+        ${PROJECT_NAME}
+        DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
