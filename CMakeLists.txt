@@ -17,6 +17,7 @@ include_directories(include)
 
 add_executable(${PROJECT_NAME} src/main.cc
         src/hand_to_arm_logic.cc
+        src/joint_struct.cc
         include/ur5_arm_control/hand_to_arm_logic.h)
 
 ament_target_dependencies(${PROJECT_NAME}
