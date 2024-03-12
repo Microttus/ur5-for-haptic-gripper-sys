@@ -41,7 +41,7 @@ class test_ik {
     float divider = 2*a_i[2]*a_i[3];
 
     if (divider != 0) {
-      joint_angles.phi_3 = acos((pow(A_3,2) + pow(B_3,2) - pow(a_i[2],2) - pow(a_i[3],2))/(divider));
+      joint_angles.phi_3 = -acos((pow(A_3,2) + pow(B_3,2) - pow(a_i[2],2) - pow(a_i[3],2))/(divider));
     } else {
       joint_angles.phi_3 = acos(0);
     }
@@ -70,7 +70,12 @@ class test_ik {
 int main() {
   test_ik joint_test;
 
-  joint_6dof ur5_test_joint = joint_test.ur5_ik_model_1(0.3, 0.2, 0.8);
+  joint_6dof ur5_test_joint = joint_test.ur5_ik_model_1(0.5, -0.2, 0.2);
 
-  std::cout << ur5_test_joint.phi_4 << std::endl;
+  std::cout << "Joint 1 -> " << ur5_test_joint.phi_1 << std::endl;
+  std::cout << "Joint 2 -> " << ur5_test_joint.phi_2 << std::endl;
+  std::cout << "Joint 3 -> " << ur5_test_joint.phi_3 << std::endl;
+  std::cout << "Joint 4 -> " << ur5_test_joint.phi_4 << std::endl;
+  std::cout << "Joint 5 -> " << ur5_test_joint.phi_5 << std::endl;
+  std::cout << "Joint 6 -> " << ur5_test_joint.phi_6 << std::endl;
 };
