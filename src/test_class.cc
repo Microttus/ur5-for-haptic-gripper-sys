@@ -106,6 +106,12 @@ class test_ik {
     return joint_angles;
   }
 
+  joint_6dof ur5_ik_model_4(float px, float py, float pz)
+  {
+
+
+  }
+
   float a_i[7] = {0, M_PI/2, -0.425, -0.392, M_PI/2, -M_PI/2, 0};
   float d_i[7] = {0, 0.0892, 0, 0, 0.1093, 0.09475, 0.0825};
   float r_i[4][4] = {{0, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}};
