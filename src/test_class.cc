@@ -74,7 +74,7 @@ class test_ik {
     float s_5 = sqrt(pow(sin(joint_angles.phi_1)*r_i[1][1] - cos(joint_angles.phi_1)*r_i[2][1], 2) + pow(sin(joint_angles.phi_1)*r_i[1][2]- cos(joint_angles.phi_1)*r_i[2][2], 2));
     float sign_s2 = (s_5 > 0.0) - (s_5 < 0.0);//(x > 0) - (x < 0)
 
-    joint_angles.phi_5 = atan2(s_5, c_5);
+    joint_angles.phi_5 = -atan2(s_5, c_5);
     joint_angles.phi_6 = atan2((cos(joint_angles.phi_1)*r_i[2][2]- sin(joint_angles.phi_1)*r_i[1][2])/sign_s2, (sin(joint_angles.phi_1)*r_i[1][1]- cos(joint_angles.phi_1)*r_i[2][1])/sign_s2);
 
     float A_234 = cos(joint_angles.phi_1)*r_i[1][1] + sin(joint_angles.phi_1)*r_i[2][1];
@@ -108,13 +108,39 @@ class test_ik {
 
   joint_6dof ur5_ik_model_4(float px, float py, float pz)
   {
+    joint_6dof joint_angles;
 
+    float A_1 = px - d_i[6]*r_i[1][3];
+    float B_1 = d_i[6]*r_i[2][3] - py;
 
+    joint_angles.phi_1 = atan2(A_1, B_1) + atan2(sqrt(pow(A_1,2) + pow(B_1,2) - pow(d_i[4],3)), d_i[4]);
+
+    float c_5 = sin(joint_angles.phi_1)*r_i[1][3] - cos(joint_angles.phi_1)*r_i[2][3];
+    float s_5 = sqrt(pow(sin(joint_angles.phi_1)*r_i[1][1] - cos(joint_angles.phi_1)*r_i[2][1], 2) + pow(sin(joint_angles.phi_1)*r_i[1][2]- cos(joint_angles.phi_1)*r_i[2][2], 2));
+    float sign_s2 = (s_5 > 0.0) - (s_5 < 0.0);//(x > 0) - (x < 0)
+
+    joint_angles.phi_5 = atan2(s_5, c_5);
+    joint_angles.phi_6 = atan2((cos(joint_angles.phi_1)*r_i[2][2] - sin(joint_angles.phi_1)*r_i[1][2])/ sin(joint_angles.phi_5), (sin(joint_angles.phi_1)*r_i[1][1]-cos(joint_angles.phi_1)*r_i[2][1])/ sin(joint_angles.phi_5));
+    //joint_angles.phi_6 = atan2((cos(joint_angles.phi_1)*r_i[2][2]- sin(joint_angles.phi_1)*r_i[1][2])/sign_s2, (sin(joint_angles.phi_1)*r_i[1][1]- cos(joint_angles.phi_1)*r_i[2][1])/sign_s2);
+
+    float A_234 = cos(joint_angles.phi_1)*r_i[1][1] + sin(joint_angles.phi_1)*r_i[2][1];
+    float phi_234 = atan2(cos(joint_angles.phi_5)* cos(joint_angles.phi_6)*r_i[3][1] - sin(joint_angles.phi_6)*A_234,
+                          cos(joint_angles.phi_5)* cos(joint_angles.phi_6)*A_234 + sin(joint_angles.phi_6)*r_i[3][1]);
+
+    float K_C = cos(joint_angles.phi_1)*px + sin(joint_angles.phi_1)*py - sin(phi_234)*d_i[5] + cos(phi_234)* sin(joint_angles.phi_5)*d_i[6];
+    float K_S = pz - d_i[1] + cos(phi_234)*d_i[5] + sin(phi_234)* sin(joint_angles.phi_5)*d_i[6];
+
+    joint_angles.phi_3 = -atan2(sqrt(1- pow((pow(K_S,2) + pow(K_C,2) - pow(a_i[2],2) - pow(a_i[3],2))/(2*a_i[2]*a_i[3]),2)), (pow(K_S, 2) + pow(K_C, 2) - pow(a_i[2], 2) - pow(a_i[3], 2))/(2*a_i[2]*a_i[3]));
+    joint_angles.phi_2 = atan2(K_S, K_C) - atan2(a_i[3]* sin(joint_angles.phi_3), a_i[3]* cos(joint_angles.phi_3)+a_i[2]);
+
+    joint_angles.phi_4 = phi_234 - joint_angles.phi_2 - joint_angles.phi_3;
+
+    return joint_angles;
   }
 
-  float a_i[7] = {0, M_PI/2, -0.425, -0.392, M_PI/2, -M_PI/2, 0};
+  float a_i[7] = {0, M_PI/2, 0.425, 0.392, M_PI/2, -M_PI/2, 0};
   float d_i[7] = {0, 0.0892, 0, 0, 0.1093, 0.09475, 0.0825};
-  float r_i[4][4] = {{0, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}};
+  float r_i[4][4] = {{0, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, -1, 0}, {0, 0, 0, -1}};
 };
 
 
@@ -123,13 +149,17 @@ int main() {
 
   joint_6dof ur5_test_joint = joint_test.ur5_ik_model_1(0.5, 0.0, 0.2);
   joint_6dof ur5_test_joint_3 = joint_test.ur5_ik_model_3(0.5, 0.0, 0.2);
+  joint_6dof ur5_test_joint_4 = joint_test.ur5_ik_model_4(-0.5, 0.0, 0.2);
+
+  // Fakk meg
+  //https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html
 
   float trans_const = 180/M_PI;
 
-  std::cout << "Joint 1 -> " << ur5_test_joint.phi_1 << " - Joint 1 -> " << ur5_test_joint_3.phi_1*trans_const << std::endl;
-  std::cout << "Joint 2 -> " << ur5_test_joint.phi_2 << " - Joint 2 -> " << ur5_test_joint_3.phi_2*trans_const << std::endl;
-  std::cout << "Joint 3 -> " << ur5_test_joint.phi_3 << " - Joint 3 -> " << ur5_test_joint_3.phi_3*trans_const << std::endl;
-  std::cout << "Joint 4 -> " << ur5_test_joint.phi_4 << " - Joint 4 -> " << ur5_test_joint_3.phi_4*trans_const << std::endl;
-  std::cout << "Joint 5 -> " << ur5_test_joint.phi_5 << " - Joint 5 -> " << ur5_test_joint_3.phi_5*trans_const << std::endl;
-  std::cout << "Joint 6 -> " << ur5_test_joint.phi_6 << " - Joint 6 -> " << ur5_test_joint_3.phi_6*trans_const << std::endl;
+  std::cout << "Joint 1 -> " << ur5_test_joint.phi_1*trans_const << " - Joint 1 -> " << ur5_test_joint_3.phi_1*trans_const << " - Joint 1 -> " << ur5_test_joint_4.phi_1*trans_const << std::endl;
+  std::cout << "Joint 2 -> " << ur5_test_joint.phi_2*trans_const << " - Joint 2 -> " << ur5_test_joint_3.phi_2*trans_const << " - Joint 2 -> " << ur5_test_joint_4.phi_2*trans_const << std::endl;
+  std::cout << "Joint 3 -> " << ur5_test_joint.phi_3*trans_const << " - Joint 3 -> " << ur5_test_joint_3.phi_3*trans_const << " - Joint 3 -> " << ur5_test_joint_4.phi_3*trans_const << std::endl;
+  std::cout << "Joint 4 -> " << ur5_test_joint.phi_4*trans_const << " - Joint 4 -> " << ur5_test_joint_3.phi_4*trans_const << " - Joint 4 -> " << ur5_test_joint_4.phi_4*trans_const << std::endl;
+  std::cout << "Joint 5 -> " << ur5_test_joint.phi_5*trans_const << " - Joint 5 -> " << ur5_test_joint_3.phi_5*trans_const << " - Joint 5 -> " << ur5_test_joint_4.phi_5*trans_const << std::endl;
+  std::cout << "Joint 6 -> " << ur5_test_joint.phi_6*trans_const << " - Joint 6 -> " << ur5_test_joint_3.phi_6*trans_const << " - Joint 6 -> " << ur5_test_joint_4.phi_6*trans_const << std::endl;
 };
