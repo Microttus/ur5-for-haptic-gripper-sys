@@ -149,7 +149,7 @@ int main() {
 
   joint_6dof ur5_test_joint = joint_test.ur5_ik_model_1(0.5, 0.0, 0.2);
   joint_6dof ur5_test_joint_3 = joint_test.ur5_ik_model_3(0.5, 0.0, 0.2);
-  joint_6dof ur5_test_joint_4 = joint_test.ur5_ik_model_4(-0.5, 0.0, 0.2);
+  joint_6dof ur5_test_joint_4 = joint_test.ur5_ik_model_4(-0.5, 0.2, 0.2);
 
   // Fakk meg
   //https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html

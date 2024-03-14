@@ -12,13 +12,17 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(ur_rtde REQUIRED)
 
 include_directories(include)
 
 add_executable(${PROJECT_NAME} src/main.cc
         src/hand_to_arm_logic.cc
         src/joint_struct.cc
-        include/ur5_arm_control/hand_to_arm_logic.h)
+        include/ur5_arm_control/hand_to_arm_logic.h
+        src/ur_rtde_test.cc)
+
+target_link_libraries(${PROJECT_NAME} ur_rtde::rtde)
 
 ament_target_dependencies(${PROJECT_NAME}
         rclcpp
