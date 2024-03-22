@@ -4,10 +4,10 @@
 
 #include "ur5_arm_control/hand_to_arm_logic.h"
 
-
+//"172.17.0.2"
 hand_to_arm_logic::hand_to_arm_logic()
-: rtde_control("172.17.0.2", 500.0, ur_rtde::RTDEControlInterface::FLAG_USE_EXT_UR_CAP, 50002)
-, ur_speed(0.5)
+: rtde_control("10.42.0.251", 500.0, ur_rtde::RTDEControlInterface::FLAG_USE_EXT_UR_CAP, 50002)
+, ur_speed(2)
 , ur_acceleration(1.4)
 {
 
@@ -24,7 +24,7 @@ joint_6dof hand_to_arm_logic::ur5_ik_model_1(double px, double py, double pz)
   joint_6dof joint_q;
 
   joint_q.phi_1 = px;
-  joint_q.phi_2 = pz;
+  joint_q.phi_2 = py;
   joint_q.phi_3 = pz;
 
   return joint_q;

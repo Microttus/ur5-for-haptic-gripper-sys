@@ -20,19 +20,19 @@ class HandToArmLogicInterface : public rclcpp::Node
   , tool_pos()
   {
     ur5_arm_pub_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("/scaled_joint_trajectory_controller/joint_trajectory", 10);    // Finger force publisher
-    hand_pos_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("/palm_pos_id1", 10, std::bind(&HandToArmLogicInterface::update_hand_pos, this, std::placeholders::_1));
-    timer_ = this->create_wall_timer(2s, std::bind(&HandToArmLogicInterface::timer_callback, this));
+    hand_pos_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("/marker_pos_id1", 10, std::bind(&HandToArmLogicInterface::update_hand_pos, this, std::placeholders::_1));
+    timer_ = this->create_wall_timer(200ms, std::bind(&HandToArmLogicInterface::timer_callback, this));
     //scaled_joint_trajectory_controller/joint_trajectory
     std::signal(SIGINT, &HandToArmLogicInterface::onShutdown);
 
-    std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 0.0, 0.0};
+    std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 1.2, 0.0};
 
     tool_pos.x = 0.5;
     tool_pos.y = 0.0;
     tool_pos.z = 0.3;
     tool_pos.rx = -3.14;
     tool_pos.ry = 0.0;
-    tool_pos.rz = 0.0;
+    tool_pos.rz = 1.2;
     ur_arm.rtde_set_pose(tool_pos);
 
     RCLCPP_INFO(this->get_logger(), "Setup completed");
@@ -82,8 +82,8 @@ class HandToArmLogicInterface : public rclcpp::Node
     //RobotArm.set_goal_point(posX, posY, posZ);
     //std::cout << "Hei?" << std::endl;
 
-    tool_pos.y = posX;
-    tool_pos.z = -posY;
+    tool_pos.y = -posX * 1.1;
+    tool_pos.z = -posY + 0.1;
 
     //RCLCPP_INFO(this->get_logger(), "New point received");
   }
