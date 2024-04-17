@@ -19,20 +19,30 @@ class HandToArmLogicInterface : public rclcpp::Node
   , ur_arm()
   , tool_pos()
   {
+    rclcpp::QoS micro_ros_qos_profile(rclcpp::KeepLast(10));
+    micro_ros_qos_profile.reliability(rclcpp::ReliabilityPolicy::BestEffort);
+    micro_ros_qos_profile.history(rclcpp::HistoryPolicy::KeepLast);
+    micro_ros_qos_profile.durability(rclcpp::DurabilityPolicy::Volatile);
+    //micro_ros_qos_profile.deadline(std::chrono::seconds(1));
+    micro_ros_qos_profile.liveliness(rclcpp::LivelinessPolicy::Automatic);
+
     ur5_arm_pub_ = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("/scaled_joint_trajectory_controller/joint_trajectory", 10);    // Finger force publisher
+
     hand_pos_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("/marker_pos_id1", 10, std::bind(&HandToArmLogicInterface::update_hand_pos, this, std::placeholders::_1));
+    hand_rot_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("/ice_glove_palm_rotation_id1", micro_ros_qos_profile, std::bind(&HandToArmLogicInterface::update_hand_rot, this, std::placeholders::_1));
+
     timer_ = this->create_wall_timer(200ms, std::bind(&HandToArmLogicInterface::timer_callback, this));
     //scaled_joint_trajectory_controller/joint_trajectory
     std::signal(SIGINT, &HandToArmLogicInterface::onShutdown);
 
-    std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 1.2, 0.0};
+    //std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 1.2, 0.0};
 
     tool_pos.x = 0.5;
     tool_pos.y = 0.0;
-    tool_pos.z = 0.3;
-    tool_pos.rx = -3.14;
-    tool_pos.ry = 0.0;
-    tool_pos.rz = 1.2;
+    tool_pos.z = 0.1;
+    tool_pos.rx = 0.0;
+    tool_pos.ry = 4.8;
+    tool_pos.rz = 0.0;1.2;
     ur_arm.rtde_set_pose(tool_pos);
 
     RCLCPP_INFO(this->get_logger(), "Setup completed");
@@ -48,7 +58,7 @@ class HandToArmLogicInterface : public rclcpp::Node
 
     ur_arm.rtde_set_pose(tool_pos);
 
-    RCLCPP_INFO(this->get_logger(), "New point sent by RTDE -> x: %f y: %f z: %f", tool_pos.x, tool_pos.y, tool_pos.z);
+    RCLCPP_INFO(this->get_logger(), "New point sent by RTDE -> x: %f y: %f z: %f rx: %f ry: %f rz: %f", tool_pos.x, tool_pos.y, tool_pos.z, tool_pos.rx, tool_pos.ry, tool_pos.rz);
   }
 
   void publish_tcp_pos(){
@@ -88,6 +98,28 @@ class HandToArmLogicInterface : public rclcpp::Node
     //RCLCPP_INFO(this->get_logger(), "New point received");
   }
 
+  void update_hand_rot(geometry_msgs::msg::Twist::SharedPtr msg){
+    // Retrive new values
+    double accX = msg->linear.x;
+    double accY = msg->linear.y;
+    double accZ = msg->linear.z;
+
+    std::vector<double> palm_rot_vec = ur_arm.acc_to_rot(accX, accY, accZ, 0.0, 0.0);
+
+    if (palm_rot_vec.at(0) < 0) {
+      tool_pos.ry = palm_rot_vec.at(0) + 4.71;
+    } else {
+      tool_pos.ry = 4.71;
+    }
+
+    if (palm_rot_vec.at(1) > -1 and palm_rot_vec.at(1) < 1) {
+      tool_pos.rx = -palm_rot_vec.at(1); //+ palm_rot_vec.at(0);// + 1.57;
+      tool_pos.rz = palm_rot_vec.at(1);// - (palm_rot_vec.at(1)/2);
+    }
+
+    //std::cout << "Tool_Pos -> rx: " << palm_rot_vec.at(0) << "  ry: " << -1*palm_rot_vec.at(1) + 3.14 << " rz: " << palm_rot_vec.at(2) <<std::endl;
+  }
+
   static void onShutdown(int signum) {
     if (signum == SIGINT) {
       // Perform cleanup operations before shutting down
@@ -103,11 +135,12 @@ class HandToArmLogicInterface : public rclcpp::Node
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr ur5_arm_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr hand_pos_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr hand_rot_sub_;
 
   // Initialize hand logic class
   hand_to_arm_logic ur_arm;
   cart_point tool_pos;
-  std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 0.0, 0.0};
+  //std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 0.0, 0.0};
 };
 
 
