@@ -18,7 +18,6 @@ include_directories(include)
 
 add_executable(${PROJECT_NAME} src/main.cc
         src/hand_to_arm_logic.cc
-        src/joint_struct.cc
         src/ur_rtde_test.cc)
 
 target_link_libraries(${PROJECT_NAME} ur_rtde::rtde)

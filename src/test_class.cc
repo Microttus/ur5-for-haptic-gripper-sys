@@ -144,6 +144,36 @@ class test_ik {
 };
 
 
+class time_test {
+ public:
+  time_test(): integrator_time(std::chrono::steady_clock::now()) { };
+
+  double complimentary_filter(double new_val, double last_val, double alpha) {
+    double calc_val = (last_val * (1-alpha)) + (new_val * alpha);
+    return calc_val;
+  }
+
+  double integrator(double new_val, double last_val) {
+    std::chrono::steady_clock::time_point new_time = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(new_time - integrator_time).count();
+
+    integrator_time = new_time;
+
+    double double_time = static_cast<double>(duration) * 0.001;
+
+    std::cout << double_time << std::endl;
+
+    double integrated_time = last_val + (new_val * double_time);
+
+    return integrated_time;
+  }
+
+ private:
+  //std::chrono::time_point<std::chrono::steady_clock, std::chrono::duration> integrator_time;
+  std::chrono::steady_clock::time_point integrator_time;// = std::chrono::steady_clock::now();
+};
+
+
 int main() {
   test_ik joint_test;
 
@@ -162,4 +192,14 @@ int main() {
   std::cout << "Joint 4 -> " << ur5_test_joint.phi_4*trans_const << " - Joint 4 -> " << ur5_test_joint_3.phi_4*trans_const << " - Joint 4 -> " << ur5_test_joint_4.phi_4*trans_const << std::endl;
   std::cout << "Joint 5 -> " << ur5_test_joint.phi_5*trans_const << " - Joint 5 -> " << ur5_test_joint_3.phi_5*trans_const << " - Joint 5 -> " << ur5_test_joint_4.phi_5*trans_const << std::endl;
   std::cout << "Joint 6 -> " << ur5_test_joint.phi_6*trans_const << " - Joint 6 -> " << ur5_test_joint_3.phi_6*trans_const << " - Joint 6 -> " << ur5_test_joint_4.phi_6*trans_const << std::endl;
+
+  time_test test_time_;
+  double last = 1.0;
+
+  for (int i = 0; i < 10; ++i) {
+    last = test_time_.integrator(1.0, last);
+    std::cin.ignore();
+  }
+
+  std::cout << "Integrated value " << last << std::endl;
 };

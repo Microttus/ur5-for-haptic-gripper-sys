@@ -8,6 +8,10 @@ endif()
 message(${PROJECT_NAME})
 
 find_package(ur_rtde REQUIRED)
-add_executable(ur_rtde_cmake_example ur_rtde_test.cc)
+
+add_executable(ur_rtde_cmake_example
+                ur_rtde_test.cc
+                )
+
 target_link_libraries(ur_rtde_cmake_example PRIVATE ur_rtde::rtde)
 

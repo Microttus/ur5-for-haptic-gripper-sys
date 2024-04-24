@@ -14,7 +14,9 @@ hand_to_arm_logic::hand_to_arm_logic()
 , ur_speed(2)
 , ur_acceleration(1.4)
 {
-
+  integrator_time.push_back(std::chrono::steady_clock::now());
+  integrator_time.push_back(std::chrono::steady_clock::now());
+  integrator_time.push_back(std::chrono::steady_clock::now());
 }
 
 hand_to_arm_logic::~hand_to_arm_logic()
@@ -69,4 +71,22 @@ std::vector<double> hand_to_arm_logic::acc_to_rot(double ax, double ay, double a
   std::vector<double> rotation_of_palm({phi, theta, omega});
 
   return rotation_of_palm;
+}
+
+double hand_to_arm_logic::complimentary_filter(double new_val, double last_val, double alpha) {
+  double calc_val = (last_val * (1-alpha)) + (new_val * alpha);
+  return calc_val;
+}
+
+double hand_to_arm_logic::integrator(double new_val, double last_val, int id) {
+  std::chrono::steady_clock::time_point new_time = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(new_time - integrator_time.at(id)).count();
+
+  integrator_time.at(id) = new_time;
+
+  double double_time = static_cast<double>(duration) * 0.001;
+
+  double integrated_time = last_val + (new_val * double_time);
+
+  return integrated_time;
 }

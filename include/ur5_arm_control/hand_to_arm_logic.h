@@ -7,10 +7,11 @@
 
 # include <math.h>
 # include <vector>
+#include <chrono>
 
 #include <ur_rtde/rtde_control_interface.h>
 
-#include "../src/joint_struct.cc"
+#include "../joint_struct.h"
 
 
 class hand_to_arm_logic {
@@ -23,10 +24,18 @@ class hand_to_arm_logic {
   void rtde_set_pose(cart_point pose_q);
   std::vector<double> acc_to_rot(double ax, double ay, double az, double offset_roll = 0, double offset_pitch = 0);
 
+  double complimentary_filter(double new_val, double last_val, double alpha = 0.01);
+  double integrator(double new_val, double last_val, int id);
+
  private:
   ur_rtde::RTDEControlInterface rtde_control;
+
   double ur_speed;
   double ur_acceleration;
+
+  std::vector<std::chrono::steady_clock::time_point> integrator_time;
+
+
 
 
 };
