@@ -24,7 +24,7 @@ class hand_to_arm_logic {
   void rtde_set_pose(cart_point pose_q);
   std::vector<double> acc_to_rot(double ax, double ay, double az, double offset_roll = 0, double offset_pitch = 0);
 
-  double complimentary_filter(double new_val, double last_val, double alpha = 0.01);
+  double complimentary_filter(double main_val, double second_val, double last_value, double alpha = 0.1);
   double integrator(double new_val, double last_val, int id);
 
  private:

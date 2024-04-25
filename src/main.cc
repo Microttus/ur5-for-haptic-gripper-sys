@@ -51,6 +51,10 @@ class HandToArmLogicInterface : public rclcpp::Node
     gyro_values.y = 0;
     gyro_values.z = 0;
 
+    comp_values.x = 0;
+    comp_values.y = 0;
+    comp_values.z = 0;
+
     RCLCPP_INFO(this->get_logger(), "Setup completed");
   }
 
@@ -120,18 +124,22 @@ class HandToArmLogicInterface : public rclcpp::Node
 
     std::vector<double> palm_rot_vec = ur_arm.acc_to_rot(accX, accY, accZ, 0.0, 0.0);
 
+    comp_values.x = ur_arm.complimentary_filter(gyrX, palm_rot_vec.at(0), comp_values.x, 0.4);
+    comp_values.y = ur_arm.complimentary_filter(gyrY, palm_rot_vec.at(1), comp_values.y, 0.4);
+    comp_values.z = ur_arm.complimentary_filter(gyrZ, palm_rot_vec.at(2), comp_values.z, 0.4);
+
     if (palm_rot_vec.at(0) < 0) {
-      tool_pos.ry = palm_rot_vec.at(0) + 4.71;
+      tool_pos.ry = comp_values.x + 4.71;
     } else {
       tool_pos.ry = 4.71;
     }
 
-    if (palm_rot_vec.at(1) > -1 and palm_rot_vec.at(1) < 1) {
-      tool_pos.rx = -palm_rot_vec.at(1); //+ palm_rot_vec.at(0);// + 1.57;
-      tool_pos.rz = palm_rot_vec.at(1);// - (palm_rot_vec.at(1)/2);
+    if (comp_values.y > -1 and comp_values.y < 1) {
+      tool_pos.rx = -comp_values.y; //+ palm_rot_vec.at(0);// + 1.57;
+      tool_pos.rz = comp_values.y;// - (palm_rot_vec.at(1)/2);
     }
 
-    std::cout << "Tool_Pos -> rx: " << palm_rot_vec.at(0) << "  gyrX: " << gyro_values.x << " gyrY: " << gyro_values.y <<std::endl;
+    //std::cout << "Tool_Pos -> rx: " << palm_rot_vec.at(0) << "  gyrX: " << gyro_values.x << " compX: " << comp_values.x << std::endl;
   }
 
   static void onShutdown(int signum) {
@@ -155,6 +163,7 @@ class HandToArmLogicInterface : public rclcpp::Node
   hand_to_arm_logic ur_arm;
   cart_point tool_pos;
   xyz_values gyro_values;
+  xyz_values comp_values;
   //std::vector<double> ur_arm_init_pos = {0.5, 0.0, 0.3, -3.14, 0.0, 0.0};
 };
 

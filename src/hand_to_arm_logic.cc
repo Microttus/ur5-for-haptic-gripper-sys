@@ -73,8 +73,11 @@ std::vector<double> hand_to_arm_logic::acc_to_rot(double ax, double ay, double a
   return rotation_of_palm;
 }
 
-double hand_to_arm_logic::complimentary_filter(double new_val, double last_val, double alpha) {
-  double calc_val = (last_val * (1-alpha)) + (new_val * alpha);
+double hand_to_arm_logic::complimentary_filter(double main_val, double second_val, double last_value, double alpha) {
+
+  double main_after_last = last_value - main_val;
+  double calc_val = (main_after_last * (1-alpha)) + (second_val * alpha);
+
   return calc_val;
 }
 
