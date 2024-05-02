@@ -42,8 +42,8 @@ class HandToArmLogicInterface : public rclcpp::Node
     tool_pos.y = 0.0;
     tool_pos.z = 0.1;
     tool_pos.rx = 0.0;
-    tool_pos.ry = 4.8;
-    tool_pos.rz = 0.0;1.2;
+    tool_pos.ry = 1.57;//4.8;
+    tool_pos.rz = 0.0;//1.2;
 
     ur_arm.rtde_set_pose(tool_pos);
 
@@ -102,8 +102,11 @@ class HandToArmLogicInterface : public rclcpp::Node
     //RobotArm.set_goal_point(posX, posY, posZ);
     //std::cout << "Hei?" << std::endl;
 
+    double new_z_pose = -posY + 0.2;
+    if (new_z_pose > 0.3) {new_z_pose = 0.3;}
+
     tool_pos.y = -posX * 1.1;
-    tool_pos.z = -posY + 0.1;
+    tool_pos.z = new_z_pose;
 
     //RCLCPP_INFO(this->get_logger(), "New point received");
   }
@@ -128,18 +131,22 @@ class HandToArmLogicInterface : public rclcpp::Node
     comp_values.y = ur_arm.complimentary_filter(gyrY, palm_rot_vec.at(1), comp_values.y, 0.4);
     comp_values.z = ur_arm.complimentary_filter(gyrZ, palm_rot_vec.at(2), comp_values.z, 0.4);
 
-    if (palm_rot_vec.at(0) < 0) {
-      tool_pos.ry = comp_values.x + 4.71;
+    if (palm_rot_vec.at(0) < -0.3) {
+      tool_pos.ry = comp_values.y + 1.57;
     } else {
-      tool_pos.ry = 4.71;
+      tool_pos.ry = 1.57;
     }
 
+    /*
     if (comp_values.y > -1 and comp_values.y < 1) {
       tool_pos.rx = -comp_values.y; //+ palm_rot_vec.at(0);// + 1.57;
       tool_pos.rz = comp_values.y;// - (palm_rot_vec.at(1)/2);
     }
+     */
+    //tool_pos.rx = comp_values.x;
+    //tool_pos.rz = comp_values.z;
 
-    //std::cout << "Tool_Pos -> rx: " << palm_rot_vec.at(0) << "  gyrX: " << gyro_values.x << " compX: " << comp_values.x << std::endl;
+    std::cout << "Tool_Pos -> rx: " << comp_values.x << "  Y: " << comp_values.y << " compZ: " << comp_values.z << std::endl;
   }
 
   static void onShutdown(int signum) {

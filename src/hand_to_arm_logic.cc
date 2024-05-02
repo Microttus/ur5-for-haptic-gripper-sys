@@ -10,9 +10,9 @@
 //"172.17.0.2 - 5900
 // 10.42.0.251 - 50002
 hand_to_arm_logic::hand_to_arm_logic()
-: rtde_control("172.17.0.2", 500.0, ur_rtde::RTDEControlInterface::FLAG_USE_EXT_UR_CAP, 50002)
-, ur_speed(2)
-, ur_acceleration(1.4)
+: rtde_control("10.42.0.251", 500.0, ur_rtde::RTDEControlInterface::FLAG_USE_EXT_UR_CAP, 50002)
+, ur_speed(1)
+, ur_acceleration(1)
 {
   integrator_time.push_back(std::chrono::steady_clock::now());
   integrator_time.push_back(std::chrono::steady_clock::now());
